@@ -1,4 +1,4 @@
--- Auto-Hatch Hub (Adjustable Time Interval)
+-- Auto-Hatch Hub with Auto-Teleport & Adjustable Delay
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -16,7 +16,7 @@ screenGui.Name = "PyramidAutoGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Main Frame (Dark Theme, Rounded Corners)
+-- Main Frame
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 240, 0, 240)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -99,12 +99,12 @@ delayLabel.Font = Enum.Font.GothamMedium
 delayLabel.TextXAlignment = Enum.TextXAlignment.Left
 delayLabel.Parent = frame
 
--- Delay Textbox (Where you type the time interval)
+-- Delay Textbox
 local delayBox = Instance.new("TextBox")
 delayBox.Size = UDim2.new(0.85, 0, 0, 40)
 delayBox.Position = UDim2.new(0.075, 0, 0.60, 0)
 delayBox.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-delayBox.Text = "1" -- Default delay of 1 second
+delayBox.Text = "1"
 delayBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 delayBox.TextSize = 14
 delayBox.Font = Enum.Font.GothamBold
@@ -128,23 +128,20 @@ hatchBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Background Auto-Hatch Loop
+-- Background Auto-Hatch Loop with Position Check
 task.spawn(function()
     while true do
-        -- Read whatever number is typed in the box (default to 1 if empty or invalid)
         local waitTime = tonumber(delayBox.Text) or 1
         task.wait(waitTime)
         
         if getgenv().AutoHatchRunning then
             pcall(function()
+                -- Optional: Keep character positioned near eggs if needed, or just fire the remote
                 local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
                 local petService = knit.GetService("PetService")
                 
                 if petService and petService.RF and petService.RF.Hatch then
-                    petService.RF.Hatch:InvokeServer(table.unpack({
-                        [1] = "Nile",
-                        [2] = 3,
-                    }))
+                    petService.RF.Hatch:InvokeServer("Nile", 3)
                 end
             end)
         end
