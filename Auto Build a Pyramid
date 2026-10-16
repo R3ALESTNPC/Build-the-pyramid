@@ -1,4 +1,4 @@
--- Pyramid & Quarry Auto-Farm Hub with Teleport
+-- Pyramid & Quarry Auto-Farm Hub (Fully Working Simulation)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -16,7 +16,7 @@ screenGui.Name = "PyramidAutoGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Main Frame (Dark Theme, Rounded Corners) - Made slightly taller for the new button
+-- Main Frame
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 240, 0, 255)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -151,25 +151,25 @@ tpBtn.MouseButton1Click:Connect(function()
         local quarryRegion = workspace.Regions:FindFirstChild("Region:Quarry")
         
         if rootPart and quarryRegion then
-            -- Try to find a part or model center in the quarry region to teleport to
             local targetCFrame = quarryRegion:IsA("Model") and quarryRegion:GetPivot() or (quarryRegion:IsA("BasePart") and quarryRegion.CFrame)
-            
             if targetCFrame then
-                rootPart.CFrame = targetCFrame + Vector3.new(0, 5, 0) -- Teleport slightly above it
+                rootPart.CFrame = targetCFrame + Vector3.new(0, 5, 0)
             end
         end
     end)
 end)
 
--- Background Automation Loops
+-- Background Automation Loop (Handles Knit + Prompt Simulation)
 task.spawn(function()
     while true do
-        task.wait(1)
+        task.wait(0.5)
         pcall(function()
-            local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+            local success, knit = pcall(function()
+                return require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+            end)
             
             -- Handle Auto Place
-            if getgenv().AutoPlaceRunning and knit then
+            if getgenv().AutoPlaceRunning and success and knit then
                 local pyramidService = knit.GetService("PyramidService")
                 if pyramidService and pyramidService.RF and pyramidService.RF.Place then
                     pyramidService.RF.Place:InvokeServer(
@@ -181,15 +181,24 @@ task.spawn(function()
                 end
             end
             
-            -- Handle Auto Pickup
-            if getgenv().AutoPickupRunning and knit then
-                local blockService = knit.GetService("BlockService")
-                if blockService and blockService.RF and blockService.RF.Pickup then
-                    blockService.RF.Pickup:InvokeServer(workspace.Regions["Region:Quarry"])
+            -- Handle Auto Pickup via ProximityPrompt / Workspace Interaction simulation
+            if getgenv().AutoPickupRunning then
+                -- Automatically fire any ProximityPrompts found inside the quarry region
+                local quarryRegion = workspace.Regions:FindFirstChild("Region:Quarry")
+                if quarryRegion then
+                    for _, desc in ipairs(quarryRegion:GetDescendants()) do
+                        if desc:IsA("ProximityPrompt") then
+                            fireproximityprompt(desc)
+                        end
+                    end
                 end
                 
-                if blockService and blockService.RE and blockService.RE.CarryStateChanged then
-                    blockService.RE.CarryStateChanged:FireServer("19:190:0:0:0:0:0:0")
+                -- Also fire standard Knit Remote methods as backup
+                if success and knit then
+                    local blockService = knit.GetService("BlockService")
+                    if blockService and blockService.RF and blockService.RF.Pickup then
+                        blockService.RF.Pickup:InvokeServer(quarryRegion)
+                    end
                 end
             end
         end)
