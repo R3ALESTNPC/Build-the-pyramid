@@ -1,43 +1,91 @@
--- Simple Auto-Place Script Template
-getgenv().Running = true
-
--- Services
+-- Simple Auto-Farm GUI
+local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Locate the Knit framework and the PyramidService
-local Knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+-- Remove any old GUI if it already exists
+if CoreGui:FindFirstChild("PyramidAutoGui") then
+    CoreGui.PyramidAutoGui:Destroy()
+end
 
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PyramidAutoGui"
+screenGui.Parent = CoreGui
+
+-- Create Main Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.1, 0, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- Title Label
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Auto Build Menu"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 14
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
+
+-- Toggle Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.8, 0, 0, 45)
+button.Position = UDim2.new(0.1, 0, 0.45, 0)
+button.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Red = Off
+button.Text = "Auto Farm: OFF"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize:gte(14)
+button.Font = Enum.Font.SourceSansBold
+button.Parent = frame
+
+-- Automation Toggle Logic
+getgenv().AutoFarmRunning = false
+
+button.MouseButton1Click:Connect(function()
+    getgenv().AutoFarmRunning = not getgenv().AutoFarmRunning
+    
+    if getgenv().AutoFarmRunning then
+        button.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Green = On
+        button.Text = "Auto Farm: ON"
+    else
+        button.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Red = Off
+        button.Text = "Auto Farm: OFF"
+    end
+end)
+
+-- Background loop that checks the toggle
 task.spawn(function()
-    -- Wait for Knit to fully load before running commands
+    local Knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+    
     Knit.OnStart():andThen(function()
         local PyramidService = Knit.GetService("PyramidService")
 
-        print("Auto-script started!")
-
-        -- Main loop
-        while getgenv().Running do
-            task.wait(1) -- Wait 1 second between attempts to avoid spamming
-            
-            -- Use pcall so errors don't break the loop
-            pcall(function()
-                PyramidService.RF.Place:InvokeServer(table.unpack({
-                    [1] = 1,
-                    [2] = 3674,
-                    [3] = 195,
-                    [4] = {
-                        [1] = 3574,
-                        [2] = 3673,
-                        [3] = 3573,
-                        [4] = 3474,
-                        [5] = 3672,
-                        [6] = 3473,
-                        [7] = 3572,
-                        [8] = 3472,
-                    },
-                }))
-                print("Placed pyramid command sent.")
-            end)
+        while true do
+            task.wait(1)
+            if getgenv().AutoFarmRunning then
+                pcall(function()
+                    PyramidService.RF.Place:InvokeServer(table.unpack({
+                        [1] = 1,
+                        [2] = 3674,
+                        [3] = 195,
+                        [4] = {
+                            [1] = 3574,
+                            [2] = 3673,
+                            [3] = 3573,
+                            [4] = 3474,
+                            [5] = 3672,
+                            [6] = 3473,
+                            [7] = 3572,
+                            [8] = 3472,
+                        },
+                    }))
+                end)
+            end
         end
     end):catch(warn)
 end)
-
