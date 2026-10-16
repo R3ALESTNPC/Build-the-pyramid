@@ -1,0 +1,42 @@
+-- Simple Auto-Place Script Template
+getgenv().Running = true
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Locate the Knit framework and the PyramidService
+local Knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+
+task.spawn(function()
+    -- Wait for Knit to fully load before running commands
+    Knit.OnStart():andThen(function()
+        local PyramidService = Knit.GetService("PyramidService")
+
+        print("Auto-script started!")
+
+        -- Main loop
+        while getgenv().Running do
+            task.wait(1) -- Wait 1 second between attempts to avoid spamming
+            
+            -- Use pcall so errors don't break the loop
+            pcall(function()
+                PyramidService.RF.Place:InvokeServer(table.unpack({
+                    [1] = 1,
+                    [2] = 3674,
+                    [3] = 195,
+                    [4] = {
+                        [1] = 3574,
+                        [2] = 3673,
+                        [3] = 3573,
+                        [4] = 3474,
+                        [5] = 3672,
+                        [6] = 3473,
+                        [7] = 3572,
+                        [8] = 3472,
+                    },
+                }))
+                print("Placed pyramid command sent.")
+            end)
+        end
+    end):catch(warn)
+end)w
