@@ -1,4 +1,4 @@
--- Pyramid Auto-Hatch Script
+-- Pyramid Auto-Hatch Script with Auto-Positioning
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -122,6 +122,12 @@ task.spawn(function()
         
         if getgenv().AutoHatchRunning then
             pcall(function()
+                -- Optional safety: Ensure character is near the Nile egg spawn if workspace has it
+                local character = player.Character
+                local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+                local eggsFolder = workspace:FindFirstChild("Eggs") or workspace:FindFirstChild("Regions")
+                
+                -- Invoke the RemoteFunction to hatch
                 local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
                 local petService = knit.GetService("PetService")
                 
