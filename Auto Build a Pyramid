@@ -1,4 +1,4 @@
--- Pyramid & Quarry Auto-Farm Hub (Fully Working Simulation)
+-- Auto-Hatch Hub (Adjustable Time Interval)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -16,9 +16,9 @@ screenGui.Name = "PyramidAutoGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Main Frame
+-- Main Frame (Dark Theme, Rounded Corners)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 255)
+frame.Size = UDim2.new(0, 240, 0, 240)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 frame.BorderSizePixel = 0
@@ -46,7 +46,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -40, 1, 0)
 title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Auto-Farm Hub"
+title.Text = "Auto-Hatch Hub"
 title.TextColor3 = Color3.fromRGB(240, 240, 245)
 title.TextSize = 14
 title.Font = Enum.Font.GothamBold
@@ -72,135 +72,81 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Auto Place Toggle Button
-local placeBtn = Instance.new("TextButton")
-placeBtn.Size = UDim2.new(0.85, 0, 0, 40)
-placeBtn.Position = UDim2.new(0.075, 0, 0.20, 0)
-placeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-placeBtn.Text = "Auto Place: OFF"
-placeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-placeBtn.TextSize = 13
-placeBtn.Font = Enum.Font.GothamBold
-placeBtn.Parent = frame
+-- Auto Hatch Toggle Button
+local hatchBtn = Instance.new("TextButton")
+hatchBtn.Size = UDim2.new(0.85, 0, 0, 45)
+hatchBtn.Position = UDim2.new(0.075, 0, 0.20, 0)
+hatchBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+hatchBtn.Text = "Auto Hatch: OFF"
+hatchBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hatchBtn.TextSize = 14
+hatchBtn.Font = Enum.Font.GothamBold
+hatchBtn.Parent = frame
 
-local placeCorner = Instance.new("UICorner")
-placeCorner.CornerRadius = UDim.new(0, 6)
-placeCorner.Parent = placeBtn
+local hatchCorner = Instance.new("UICorner")
+hatchCorner.CornerRadius = UDim.new(0, 6)
+hatchCorner.Parent = hatchBtn
 
--- Auto Pickup Toggle Button
-local pickupBtn = Instance.new("TextButton")
-pickupBtn.Size = UDim2.new(0.85, 0, 0, 40)
-pickupBtn.Position = UDim2.new(0.075, 0, 0.42, 0)
-pickupBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-pickupBtn.Text = "Auto Pickup: OFF"
-pickupBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-pickupBtn.TextSize = 13
-pickupBtn.Font = Enum.Font.GothamBold
-pickupBtn.Parent = frame
+-- Delay Input Label
+local delayLabel = Instance.new("TextLabel")
+delayLabel.Size = UDim2.new(0.85, 0, 0, 20)
+delayLabel.Position = UDim2.new(0.075, 0, 0.48, 0)
+delayLabel.BackgroundTransparency = 1
+delayLabel.Text = "Hatch Delay (Seconds):"
+delayLabel.TextColor3 = Color3.fromRGB(200, 200, 205)
+delayLabel.TextSize = 12
+delayLabel.Font = Enum.Font.GothamMedium
+delayLabel.TextXAlignment = Enum.TextXAlignment.Left
+delayLabel.Parent = frame
 
-local pickupCorner = Instance.new("UICorner")
-pickupCorner.CornerRadius = UDim.new(0, 6)
-pickupCorner.Parent = pickupBtn
+-- Delay Textbox (Where you type the time interval)
+local delayBox = Instance.new("TextBox")
+delayBox.Size = UDim2.new(0.85, 0, 0, 40)
+delayBox.Position = UDim2.new(0.075, 0, 0.60, 0)
+delayBox.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+delayBox.Text = "1" -- Default delay of 1 second
+delayBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+delayBox.TextSize = 14
+delayBox.Font = Enum.Font.GothamBold
+delayBox.Parent = frame
 
--- Teleport to Quarry Button
-local tpBtn = Instance.new("TextButton")
-tpBtn.Size = UDim2.new(0.85, 0, 0, 40)
-tpBtn.Position = UDim2.new(0.075, 0, 0.64, 0)
-tpBtn.BackgroundColor3 = Color3.fromRGB(60, 100, 200)
-tpBtn.Text = "Teleport to Quarry"
-tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpBtn.TextSize = 13
-tpBtn.Font = Enum.Font.GothamBold
-tpBtn.Parent = frame
+local delayCorner = Instance.new("UICorner")
+delayCorner.CornerRadius = UDim.new(0, 6)
+delayCorner.Parent = delayBox
 
-local tpCorner = Instance.new("UICorner")
-tpCorner.CornerRadius = UDim.new(0, 6)
-tpCorner.Parent = tpBtn
+-- Toggle State Logic
+getgenv().AutoHatchRunning = false
 
--- Toggle States
-getgenv().AutoPlaceRunning = false
-getgenv().AutoPickupRunning = false
-
-placeBtn.MouseButton1Click:Connect(function()
-    getgenv().AutoPlaceRunning = not getgenv().AutoPlaceRunning
-    if getgenv().AutoPlaceRunning then
-        placeBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
-        placeBtn.Text = "Auto Place: ON"
+hatchBtn.MouseButton1Click:Connect(function()
+    getgenv().AutoHatchRunning = not getgenv().AutoHatchRunning
+    if getgenv().AutoHatchRunning then
+        hatchBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+        hatchBtn.Text = "Auto Hatch: ON"
     else
-        placeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-        placeBtn.Text = "Auto Place: OFF"
+        hatchBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+        hatchBtn.Text = "Auto Hatch: OFF"
     end
 end)
 
-pickupBtn.MouseButton1Click:Connect(function()
-    getgenv().AutoPickupRunning = not getgenv().AutoPickupRunning
-    if getgenv().AutoPickupRunning then
-        pickupBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
-        pickupBtn.Text = "Auto Pickup: ON"
-    else
-        pickupBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-        pickupBtn.Text = "Auto Pickup: OFF"
-    end
-end)
-
--- Teleport Logic
-tpBtn.MouseButton1Click:Connect(function()
-    pcall(function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-        local quarryRegion = workspace.Regions:FindFirstChild("Region:Quarry")
-        
-        if rootPart and quarryRegion then
-            local targetCFrame = quarryRegion:IsA("Model") and quarryRegion:GetPivot() or (quarryRegion:IsA("BasePart") and quarryRegion.CFrame)
-            if targetCFrame then
-                rootPart.CFrame = targetCFrame + Vector3.new(0, 5, 0)
-            end
-        end
-    end)
-end)
-
--- Background Automation Loop (Handles Knit + Prompt Simulation)
+-- Background Auto-Hatch Loop
 task.spawn(function()
     while true do
-        task.wait(0.5)
-        pcall(function()
-            local success, knit = pcall(function()
-                return require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
-            end)
-            
-            -- Handle Auto Place
-            if getgenv().AutoPlaceRunning and success and knit then
-                local pyramidService = knit.GetService("PyramidService")
-                if pyramidService and pyramidService.RF and pyramidService.RF.Place then
-                    pyramidService.RF.Place:InvokeServer(
-                        1, 
-                        3674, 
-                        195, 
-                        {3574, 3673, 3573, 3474, 3672, 3473, 3572, 3472}
-                    )
-                end
-            end
-            
-            -- Handle Auto Pickup via ProximityPrompt / Workspace Interaction simulation
-            if getgenv().AutoPickupRunning then
-                -- Automatically fire any ProximityPrompts found inside the quarry region
-                local quarryRegion = workspace.Regions:FindFirstChild("Region:Quarry")
-                if quarryRegion then
-                    for _, desc in ipairs(quarryRegion:GetDescendants()) do
-                        if desc:IsA("ProximityPrompt") then
-                            fireproximityprompt(desc)
-                        end
-                    end
-                end
+        -- Read whatever number is typed in the box (default to 1 if empty or invalid)
+        local waitTime = tonumber(delayBox.Text) or 1
+        task.wait(waitTime)
+        
+        if getgenv().AutoHatchRunning then
+            pcall(function()
+                local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+                local petService = knit.GetService("PetService")
                 
-                -- Also fire standard Knit Remote methods as backup
-                if success and knit then
-                    local blockService = knit.GetService("BlockService")
-                    if blockService and blockService.RF and blockService.RF.Pickup then
-                        blockService.RF.Pickup:InvokeServer(quarryRegion)
-                    end
+                if petService and petService.RF and petService.RF.Hatch then
+                    petService.RF.Hatch:InvokeServer(table.unpack({
+                        [1] = "Nile",
+                        [2] = 3,
+                    }))
                 end
-            end
-        end)
+            end)
+        end
     end
 end)
