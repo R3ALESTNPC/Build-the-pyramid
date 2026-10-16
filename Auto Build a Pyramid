@@ -1,4 +1,4 @@
--- Modern Auto-Farm GUI with Close Button
+-- Pyramid & Quarry Full Auto-Farm Hub
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -18,7 +18,7 @@ screenGui.Parent = playerGui
 
 -- Main Frame (Dark Theme, Rounded Corners)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 140)
+frame.Size = UDim2.new(0, 240, 0, 200)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 frame.BorderSizePixel = 0
@@ -46,7 +46,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -40, 1, 0)
 title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Pyramid Auto-Farm"
+title.Text = "Auto-Farm Hub"
 title.TextColor3 = Color3.fromRGB(240, 240, 245)
 title.TextSize = 14
 title.Font = Enum.Font.GothamBold
@@ -72,77 +72,96 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Toggle Button
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0.85, 0, 0, 50)
-toggleBtn.Position = UDim2.new(0.075, 0, 0.45, 0)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Red = Off
-toggleBtn.Text = "Auto Farm: OFF"
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleBtn.TextSize = 15
-toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.Parent = frame
+-- Auto Place Toggle Button
+local placeBtn = Instance.new("TextButton")
+placeBtn.Size = UDim2.new(0.85, 0, 0, 45)
+placeBtn.Position = UDim2.new(0.075, 0, 0.25, 0)
+placeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+placeBtn.Text = "Auto Place: OFF"
+placeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+placeBtn.TextSize = 14
+placeBtn.Font = Enum.Font.GothamBold
+placeBtn.Parent = frame
 
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 6)
-btnCorner.Parent = toggleBtn
+local placeCorner = Instance.new("UICorner")
+placeCorner.CornerRadius = UDim.new(0, 6)
+placeCorner.Parent = placeBtn
 
--- Toggle State Logic
-getgenv().AutoFarmRunning = false
+-- Auto Pickup Toggle Button
+local pickupBtn = Instance.new("TextButton")
+pickupBtn.Size = UDim2.new(0.85, 0, 0, 45)
+pickupBtn.Position = UDim2.new(0.075, 0, 0.60, 0)
+pickupBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+pickupBtn.Text = "Auto Pickup: OFF"
+pickupBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+pickupBtn.TextSize = 14
+pickupBtn.Font = Enum.Font.GothamBold
+pickupBtn.Parent = frame
 
-toggleBtn.MouseButton1Click:Connect(function()
-    getgenv().AutoFarmRunning = not getgenv().AutoFarmRunning
-    
-    if getgenv().AutoFarmRunning then
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80) -- Green = On
-        toggleBtn.Text = "Auto Farm: ON"
+local pickupCorner = Instance.new("UICorner")
+pickupCorner.CornerRadius = UDim.new(0, 6)
+pickupCorner.Parent = pickupBtn
+
+-- Toggle States
+getgenv().AutoPlaceRunning = false
+getgenv().AutoPickupRunning = false
+
+placeBtn.MouseButton1Click:Connect(function()
+    getgenv().AutoPlaceRunning = not getgenv().AutoPlaceRunning
+    if getgenv().AutoPlaceRunning then
+        placeBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+        placeBtn.Text = "Auto Place: ON"
     else
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Red = Off
-        toggleBtn.Text = "Auto Farm: OFF"
+        placeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+        placeBtn.Text = "Auto Place: OFF"
     end
 end)
 
--- Safe Background Automation Loop
+pickupBtn.MouseButton1Click:Connect(function()
+    getgenv().AutoPickupRunning = not getgenv().AutoPickupRunning
+    if getgenv().AutoPickupRunning then
+        pickupBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+        pickupBtn.Text = "Auto Pickup: ON"
+    else
+        pickupBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+        pickupBtn.Text = "Auto Pickup: OFF"
+    end
+end)
+
+-- Background Automation Loops
 task.spawn(function()
     while true do
         task.wait(1)
-        if getgenv().AutoFarmRunning then
-            pcall(function()
-                -- Safely look for Knit and the PyramidService each cycle
-                local packages = ReplicatedStorage:FindFirstChild("Packages")
-                if packages then
-                    local index = packages:FindFirstChild("_Index")
-                    if index then
-                        -- Dynamically search for the sleitnick knit folder
-                        for _, folder in ipairs(index:GetChildren()) do
-                            if folder.Name:match("sleitnick_knit") then
-                                local knit = require(folder.knit)
-                                if knit and knit.GetService then
-                                    local pyramidService = knit.GetService("PyramidService")
-                                    if pyramidService and pyramidService.RF and pyramidService.RF.Place then
-                                        pyramidService.RF.Place:InvokeServer(table.unpack({
-                                            [1] = 1,
-                                            [2] = 3674,
-                                            [3] = 195,
-                                            [4] = {
-                                                [1] = 3574,
-                                                [2] = 3673,
-                                                [3] = 3573,
-                                                [4] = 3474,
-                                                [5] = 3672,
-                                                [6] = 3473,
-                                                [7] = 3572,
-                                                [8] = 3472,
-                                            },
-                                        }))
-                                    end
-                                end
-                                break
-                            end
-                        end
-                    end
+        pcall(function()
+            local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
+            
+            -- Handle Auto Place
+            if getgenv().AutoPlaceRunning and knit then
+                local pyramidService = knit.GetService("PyramidService")
+                if pyramidService and pyramidService.RF and pyramidService.RF.Place then
+                    pyramidService.RF.Place:InvokeServer(
+                        1, 
+                        3674, 
+                        195, 
+                        {3574, 3673, 3573, 3474, 3672, 3473, 3572, 3472}
+                    )
                 end
-            end)
-        end
+            end
+            
+            -- Handle Auto Pickup & CarryStateChanged RemoteEvent
+            if getgenv().AutoPickupRunning and knit then
+                local blockService = knit.GetService("BlockService")
+                
+                -- Invoke the RemoteFunction pickup
+                if blockService and blockService.RF and blockService.RF.Pickup then
+                    blockService.RF.Pickup:InvokeServer(workspace.Regions["Region:Quarry"])
+                end
+                
+                -- Fire the RemoteEvent / CarryStateChanged if present
+                if blockService and blockService.RE and blockService.RE.CarryStateChanged then
+                    blockService.RE.CarryStateChanged:FireServer("19:190:0:0:0:0:0:0")
+                end
+            end
+        end)
     end
 end)
