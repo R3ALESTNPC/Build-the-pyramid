@@ -1,4 +1,4 @@
--- Pyramid & Quarry Full Auto-Farm Hub
+-- Pyramid & Quarry Auto-Farm Hub with Teleport
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -16,9 +16,9 @@ screenGui.Name = "PyramidAutoGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Main Frame (Dark Theme, Rounded Corners)
+-- Main Frame (Dark Theme, Rounded Corners) - Made slightly taller for the new button
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 200)
+frame.Size = UDim2.new(0, 240, 0, 255)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 frame.BorderSizePixel = 0
@@ -74,12 +74,12 @@ end)
 
 -- Auto Place Toggle Button
 local placeBtn = Instance.new("TextButton")
-placeBtn.Size = UDim2.new(0.85, 0, 0, 45)
-placeBtn.Position = UDim2.new(0.075, 0, 0.25, 0)
+placeBtn.Size = UDim2.new(0.85, 0, 0, 40)
+placeBtn.Position = UDim2.new(0.075, 0, 0.20, 0)
 placeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 placeBtn.Text = "Auto Place: OFF"
 placeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-placeBtn.TextSize = 14
+placeBtn.TextSize = 13
 placeBtn.Font = Enum.Font.GothamBold
 placeBtn.Parent = frame
 
@@ -89,18 +89,33 @@ placeCorner.Parent = placeBtn
 
 -- Auto Pickup Toggle Button
 local pickupBtn = Instance.new("TextButton")
-pickupBtn.Size = UDim2.new(0.85, 0, 0, 45)
-pickupBtn.Position = UDim2.new(0.075, 0, 0.60, 0)
+pickupBtn.Size = UDim2.new(0.85, 0, 0, 40)
+pickupBtn.Position = UDim2.new(0.075, 0, 0.42, 0)
 pickupBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 pickupBtn.Text = "Auto Pickup: OFF"
 pickupBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-pickupBtn.TextSize = 14
+pickupBtn.TextSize = 13
 pickupBtn.Font = Enum.Font.GothamBold
 pickupBtn.Parent = frame
 
 local pickupCorner = Instance.new("UICorner")
 pickupCorner.CornerRadius = UDim.new(0, 6)
 pickupCorner.Parent = pickupBtn
+
+-- Teleport to Quarry Button
+local tpBtn = Instance.new("TextButton")
+tpBtn.Size = UDim2.new(0.85, 0, 0, 40)
+tpBtn.Position = UDim2.new(0.075, 0, 0.64, 0)
+tpBtn.BackgroundColor3 = Color3.fromRGB(60, 100, 200)
+tpBtn.Text = "Teleport to Quarry"
+tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpBtn.TextSize = 13
+tpBtn.Font = Enum.Font.GothamBold
+tpBtn.Parent = frame
+
+local tpCorner = Instance.new("UICorner")
+tpCorner.CornerRadius = UDim.new(0, 6)
+tpCorner.Parent = tpBtn
 
 -- Toggle States
 getgenv().AutoPlaceRunning = false
@@ -128,6 +143,24 @@ pickupBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Teleport Logic
+tpBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local character = player.Character or player.CharacterAdded:Wait()
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        local quarryRegion = workspace.Regions:FindFirstChild("Region:Quarry")
+        
+        if rootPart and quarryRegion then
+            -- Try to find a part or model center in the quarry region to teleport to
+            local targetCFrame = quarryRegion:IsA("Model") and quarryRegion:GetPivot() or (quarryRegion:IsA("BasePart") and quarryRegion.CFrame)
+            
+            if targetCFrame then
+                rootPart.CFrame = targetCFrame + Vector3.new(0, 5, 0) -- Teleport slightly above it
+            end
+        end
+    end)
+end)
+
 -- Background Automation Loops
 task.spawn(function()
     while true do
@@ -148,16 +181,13 @@ task.spawn(function()
                 end
             end
             
-            -- Handle Auto Pickup & CarryStateChanged RemoteEvent
+            -- Handle Auto Pickup
             if getgenv().AutoPickupRunning and knit then
                 local blockService = knit.GetService("BlockService")
-                
-                -- Invoke the RemoteFunction pickup
                 if blockService and blockService.RF and blockService.RF.Pickup then
                     blockService.RF.Pickup:InvokeServer(workspace.Regions["Region:Quarry"])
                 end
                 
-                -- Fire the RemoteEvent / CarryStateChanged if present
                 if blockService and blockService.RE and blockService.RE.CarryStateChanged then
                     blockService.RE.CarryStateChanged:FireServer("19:190:0:0:0:0:0:0")
                 end
