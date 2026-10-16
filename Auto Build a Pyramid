@@ -1,24 +1,23 @@
--- Auto-Hatch Hub with Auto-Teleport & Adjustable Delay
+-- Pyramid Auto-Hatch Script
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
 -- Remove old GUI if it exists
 local playerGui = player:WaitForChild("PlayerGui")
-if playerGui:FindFirstChild("PyramidAutoGui") then
-    playerGui.PyramidAutoGui:Destroy()
+if playerGui:FindFirstChild("PyramidAutoHatchGui") then
+    playerGui.PyramidAutoHatchGui:Destroy()
 end
 
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "PyramidAutoGui"
+screenGui.Name = "PyramidAutoHatchGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 -- Main Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 240)
+frame.Size = UDim2.new(0, 240, 0, 210)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 frame.BorderSizePixel = 0
@@ -30,7 +29,7 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 8)
 corner.Parent = frame
 
--- Top Bar Header
+-- Header
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 36)
 topBar.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
@@ -41,19 +40,19 @@ local topCorner = Instance.new("UICorner")
 topCorner.CornerRadius = UDim.new(0, 8)
 topCorner.Parent = topBar
 
--- Title Label
+-- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -40, 1, 0)
 title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Auto-Hatch Hub"
+title.Text = "Auto-Hatch (Nile)"
 title.TextColor3 = Color3.fromRGB(240, 240, 245)
 title.TextSize = 14
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = topBar
 
--- Close Button (X)
+-- Close Button
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
 closeBtn.Position = UDim2.new(1, -32, 0, 4)
@@ -72,7 +71,7 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Auto Hatch Toggle Button
+-- Toggle Button
 local hatchBtn = Instance.new("TextButton")
 hatchBtn.Size = UDim2.new(0.85, 0, 0, 45)
 hatchBtn.Position = UDim2.new(0.075, 0, 0.20, 0)
@@ -87,22 +86,10 @@ local hatchCorner = Instance.new("UICorner")
 hatchCorner.CornerRadius = UDim.new(0, 6)
 hatchCorner.Parent = hatchBtn
 
--- Delay Input Label
-local delayLabel = Instance.new("TextLabel")
-delayLabel.Size = UDim2.new(0.85, 0, 0, 20)
-delayLabel.Position = UDim2.new(0.075, 0, 0.48, 0)
-delayLabel.BackgroundTransparency = 1
-delayLabel.Text = "Hatch Delay (Seconds):"
-delayLabel.TextColor3 = Color3.fromRGB(200, 200, 205)
-delayLabel.TextSize = 12
-delayLabel.Font = Enum.Font.GothamMedium
-delayLabel.TextXAlignment = Enum.TextXAlignment.Left
-delayLabel.Parent = frame
-
--- Delay Textbox
+-- Delay Box
 local delayBox = Instance.new("TextBox")
 delayBox.Size = UDim2.new(0.85, 0, 0, 40)
-delayBox.Position = UDim2.new(0.075, 0, 0.60, 0)
+delayBox.Position = UDim2.new(0.075, 0, 0.55, 0)
 delayBox.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
 delayBox.Text = "1"
 delayBox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -114,7 +101,6 @@ local delayCorner = Instance.new("UICorner")
 delayCorner.CornerRadius = UDim.new(0, 6)
 delayCorner.Parent = delayBox
 
--- Toggle State Logic
 getgenv().AutoHatchRunning = false
 
 hatchBtn.MouseButton1Click:Connect(function()
@@ -128,7 +114,7 @@ hatchBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Background Auto-Hatch Loop with Position Check
+-- Main Automation Loop
 task.spawn(function()
     while true do
         local waitTime = tonumber(delayBox.Text) or 1
@@ -136,12 +122,14 @@ task.spawn(function()
         
         if getgenv().AutoHatchRunning then
             pcall(function()
-                -- Optional: Keep character positioned near eggs if needed, or just fire the remote
                 local knit = require(ReplicatedStorage.Packages._Index["sleitnick_knit@1.7.0"].knit)
                 local petService = knit.GetService("PetService")
                 
                 if petService and petService.RF and petService.RF.Hatch then
-                    petService.RF.Hatch:InvokeServer("Nile", 3)
+                    petService.RF.Hatch:InvokeServer(table.unpack({
+                        [1] = "Nile",
+                        [2] = 3,
+                    }))
                 end
             end)
         end
